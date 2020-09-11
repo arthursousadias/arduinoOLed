@@ -1,3 +1,4 @@
+/* Desenvolvido por Arthur de Sousa Dias */
 
 #include <Wire.h>
 #include <SPI.h>
@@ -49,7 +50,7 @@ void loop() {
     temperatura = sensorDht.temperature;
     writeText( "T: " + (String(bmp.readTemperature()-fatorCorrecaoTemperatura) + "C "),1,0,0);
     writeText( "P: " + (String(int(bmp.readPressure()/100)) + "hPa"),1,65,0);
-   // writeText("SOPHIA",2,0,8);
+   // writeText("SOPHIA",2,0,8); //Será incluído o RTC
     writeText("A: "+(String(int(bmp.readAltitude(1013.25))))+"M",1,0,25);
     writeText(" U: "+(String(umidade))+" %",1,65,25);
     delay(4000);
