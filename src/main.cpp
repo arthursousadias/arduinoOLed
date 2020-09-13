@@ -1,10 +1,9 @@
-/* Desenvolvido por Arthur de Sousa Dias */
-
 #include <Wire.h>
 #include <SPI.h>
 #include <../Adafruit_BMP280_Library-2.0.1/Adafruit_BMP280.h>
 #include <../Adafruit_SSD1306-master/Adafruit_SSD1306.h>
 #include <../DHT/dht.h>
+#include <../RTClib-1.11.2/RTClib.h>
 #define BMP_SCK  (13)
 #define BMP_MISO (12)
 #define BMP_MOSI (11)
@@ -13,13 +12,20 @@
 #define dht_dpin 9
 
 const float fatorCorrecaoTemperatura = 1.3; //Adiciona para corrigir a distorção da temperatura;
-
+RTC_DS1307 rtc;
+char daysOfTheWeek[7][12] = {"DOM", "SEG", "TER","QUA", 
+                            "QUI", "SEX", "SAB"};
 Adafruit_SSD1306 display(OLED_RESET);
 Adafruit_BMP280 bmp; //OBJETO DO TIPO Adafruit_BMP280 (I2C)
 dht sensorDht;
+
+
 void writeText(String text,int fontSize, int posX, int posY);
 void writeBlankText(String text,int fontSize, int posX, int posY);
-
+String getDataAtual();
+String getHoraAtual();
+String getDiaSemana();
+String getDay();
 
 void setup() {
   //Serial.begin(9600);
@@ -30,10 +36,10 @@ void setup() {
     Serial.println(F("Sensor BMP280 não foi identificado! Verifique as conexões.")); //IMPRIME O TEXTO NO MONITOR SERIAL
     while(1); //SEMPRE ENTRE NO LOOP
   }
-
+  //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   /* Default settings from datasheet. */
-  bmp.setSampling(Adafruit_BMP280::MODE_FORCED,     /* Operating Mode. */
-                  Adafruit_BMP280::SAMPLING_X16,     /* Temp. oversampling */
+  bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
+                  Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
                   Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
                   Adafruit_BMP280::FILTER_X16,      /* Filtering. */
                   Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
@@ -42,18 +48,19 @@ void setup() {
 }
 
 void loop() {
+    
     double umidade = 0;
-    double temperatura = 0;
     display.clearDisplay();
     sensorDht.read11(dht_dpin);
     umidade = sensorDht.humidity;
-    temperatura = sensorDht.temperature;
     writeText( "T: " + (String(bmp.readTemperature()-fatorCorrecaoTemperatura) + "C "),1,0,0);
     writeText( "P: " + (String(int(bmp.readPressure()/100)) + "hPa"),1,65,0);
-    writeText("20:48",2,35,8); //Será incluído o RTC
+    writeText(getDiaSemana(),1,1,8);
+    writeText(getDay(),1,1,16);
+    writeText(getHoraAtual(),2,30,8); //Será incluído o RTC
     writeText("A: "+(String(int(bmp.readAltitude(1013.25))))+"M",1,0,25);
     writeText(" U: "+(String(int(umidade-10)))+" %",1,65,25);
-    delay(4000);
+    delay(1000);
 }
 
 void writeText(String text,int fontSize, int posX, int posY) {
@@ -72,3 +79,26 @@ void writeBlankText(String text,int fontSize, int posX, int posY) {
   display.display();  
 }
 
+String getDataAtual(){
+  DateTime now = rtc.now();
+  String dataAtual;
+  dataAtual = String(now.day(),DEC) + '/' + String(now.month(),DEC) + '/' + String(now.year(),DEC);
+    // Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
+  return dataAtual;
+   
+}
+String getHoraAtual(){
+  DateTime now = rtc.now();
+  String horaAtual;
+  horaAtual = String(now.hour(),DEC) + ':' + String(now.minute(),DEC) + ':'+ String(now.second(),DEC);
+    // Serial.prStringint(daysOfTheWeek[now.dayOfTheWeek()]);
+  return horaAtual;   
+}
+String getDiaSemana(){
+  DateTime now = rtc.now();
+  return daysOfTheWeek[now.dayOfTheWeek()];
+}
+String getDay(){
+  DateTime now = rtc.now();
+  return String(now.day(),DEC);
+}
