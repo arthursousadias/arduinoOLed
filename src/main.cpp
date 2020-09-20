@@ -11,7 +11,7 @@
 #define OLED_RESET 4
 #define dht_dpin 9
 
-const float fatorCorrecaoTemperatura = 1.3; //Adiciona para corrigir a distorção da temperatura;
+const float fatorCorrecaoTemperatura = 0; //Adiciona para corrigir a distorção da temperatura;
 
 char daysOfTheWeek[7][12] = {"DOM", "SEG", "TER","QUA", 
                             "QUI", "SEX", "SAB"};
@@ -42,6 +42,9 @@ void setup() {
                   Adafruit_BMP280::FILTER_X16,      /* Filtering. */
                   Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
  display.clearDisplay();
+ //
+ //Observação: Adicionar um  delay(200) se o ajuste do rtc não funcionar
+ //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
 
 }
 
@@ -56,7 +59,7 @@ void loop() {
     writeText(getDay(),1,1,16);
     writeText(getHourNow(),2,30,8); 
     writeText("A: "+(String(int(bmp.readAltitude(1013.25))))+"M",1,0,25);
-    writeText(" U: "+(String(int(umidade-10)))+" %",1,65,25);
+    writeText(" U: "+(String(int(umidade-0)))+" %",1,65,25);
     delay(1000);
 }
 
@@ -91,5 +94,6 @@ String getDay(){
 }
 
 void ajustDateHour(){
+  DateTime now = rtc.now();
   rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
 }
